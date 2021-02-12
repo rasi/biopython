@@ -193,10 +193,21 @@ def _parse_primers_packet(length, data, record):
         quals = {}
 
         name = _get_attribute_value(primer, "name")
+
+        # get all primer attributes
+        attrs = primer.attributes
+        for index in range(attrs.length):
+            attr = attrs.item(index)
+            quals[attr.name] = attr.value
+            # print(f'name: {attr.name}, value: {attr.value}, prefix: {attr.prefix}')
+
         if name:
             quals["label"] = [name]
 
         for site in primer.getElementsByTagName("BindingSite"):
+            # skip binding sites that have simplified=1 (presumably not the original site)
+            if _get_attribute_value(site, "simplified"):
+                continue
             rng = _get_attribute_value(
                 site, "location", error="Missing binding site location"
             )
